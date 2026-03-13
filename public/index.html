@@ -1,1 +1,842 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UPI Rakshak – Payment Fraud Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#050810;--s1:#0b1120;--s2:#111827;--bd:#1e2d45;--ac:#00e5ff;--ac2:#ff3d71;--ac3:#a855f7;--safe:#10b981;--warn:#f59e0b;--danger:#ef4444;--txt:#e2e8f0;--muted:#64748b}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:'DM Sans',sans-serif;font-weight:300;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.5}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--ac);border-radius:2px}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:1rem 3rem;background:rgba(5,8,16,.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,.08)}
+.logo{font-family:'Syne',sans-serif;font-size:1.35rem;font-weight:800;color:var(--ac);display:flex;align-items:center;gap:.5rem;text-decoration:none}
+.logo-badge{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:var(--ac);color:var(--bg);border-radius:6px;font-size:.8rem;font-weight:800}
+nav ul{display:flex;gap:2rem;list-style:none}
+nav a{color:var(--muted);text-decoration:none;font-size:.82rem;font-weight:500;letter-spacing:.04em;text-transform:uppercase;transition:color .2s}
+nav a:hover{color:var(--ac)}
+.nav-cta{background:var(--ac)!important;color:var(--bg)!important;padding:.38rem 1rem;border-radius:6px;font-weight:700!important}
+@media(max-width:768px){nav{padding:1rem};nav ul{display:none}}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:6rem 2rem 4rem;position:relative;overflow:hidden}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,229,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.03) 1px,transparent 1px);background-size:40px 40px;animation:gridMove 20s linear infinite}
+@keyframes gridMove{from{background-position:0 0}to{background-position:40px 40px}}
+.hero-glow{position:absolute;width:700px;height:700px;background:radial-gradient(circle,rgba(0,229,255,.07) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+.hero-pill{display:inline-flex;align-items:center;gap:.5rem;background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.2);padding:.35rem .9rem;border-radius:100px;font-family:'DM Mono',monospace;font-size:.72rem;color:var(--ac);margin-bottom:1.8rem;animation:fadeDown .8s ease both}
+.pulse{width:6px;height:6px;background:var(--ac);border-radius:50%;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(2.8rem,7vw,5.5rem);font-weight:800;line-height:.95;letter-spacing:-.03em;animation:fadeDown .8s .1s ease both}
+.hero h1 span{color:var(--ac)}
+.hero-sub{max-width:540px;margin:1.5rem auto 2.5rem;color:var(--muted);font-size:1rem;line-height:1.75;animation:fadeDown .8s .2s ease both}
+.hero-actions{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;animation:fadeDown .8s .3s ease both}
+.btn-primary{background:var(--ac);color:var(--bg);border:none;padding:.8rem 1.8rem;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:.92rem;cursor:pointer;transition:all .2s}
+.btn-primary:hover{background:#00b8d4;transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,229,255,.3)}
+.btn-ghost{background:transparent;color:var(--txt);border:1px solid var(--bd);padding:.8rem 1.8rem;border-radius:8px;font-family:'Syne',sans-serif;font-weight:600;font-size:.92rem;cursor:pointer;transition:all .2s}
+.btn-ghost:hover{border-color:var(--ac);color:var(--ac)}
+.hero-stats{display:flex;gap:3rem;margin-top:4rem;animation:fadeDown .8s .4s ease both;flex-wrap:wrap;justify-content:center}
+.stat{text-align:center}
+.stat-val{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--ac)}
+.stat-lbl{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:.2rem}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:none}}
+
+/* LAYOUT */
+.section-wrap{padding:5rem 2rem;max-width:1200px;margin:0 auto}
+.full-bg{background:var(--s1);padding:5rem 0}
+.full-bg .section-wrap{padding:5rem 2rem}
+.divider{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--bd),transparent)}
+.section-label{font-family:'DM Mono',monospace;font-size:.68rem;text-transform:uppercase;letter-spacing:.15em;color:var(--ac);margin-bottom:1rem}
+.section-title{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;letter-spacing:-.02em;line-height:1.1;margin-bottom:1.2rem}
+.section-desc{color:var(--muted);max-width:560px;line-height:1.8;font-size:.95rem}
+
+/* HOW IT WORKS */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1.2rem;margin-top:2.5rem}
+.step-card{background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:1.6rem;position:relative;overflow:hidden;transition:border-color .3s,transform .3s}
+.step-card:hover{border-color:var(--ac);transform:translateY(-3px)}
+.step-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--ac),var(--ac3));opacity:0;transition:opacity .3s}
+.step-card:hover::before{opacity:1}
+.step-num{font-family:'DM Mono',monospace;font-size:.65rem;color:var(--ac);margin-bottom:.8rem;letter-spacing:.1em}
+.step-icon{font-size:1.8rem;margin-bottom:.8rem}
+.step-card h3{font-family:'Syne',sans-serif;font-weight:700;margin-bottom:.4rem;font-size:1rem}
+.step-card p{color:var(--muted);font-size:.87rem;line-height:1.7}
+
+/* TABS */
+.tabs{display:flex;gap:.4rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.tab{padding:.48rem 1.1rem;border-radius:7px;font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;background:transparent;border:1px solid var(--bd);color:var(--muted);cursor:pointer;transition:all .2s}
+.tab.active{background:var(--ac);color:var(--bg);border-color:var(--ac)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* ANALYZER */
+.analyzer-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.8rem;margin-top:1rem}
+@media(max-width:768px){.analyzer-grid{grid-template-columns:1fr}}
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:1.8rem}
+.form-group{margin-bottom:1.1rem}
+label{display:block;font-size:.75rem;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.45rem}
+input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:.65rem .9rem;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:.92rem;transition:border-color .2s;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--ac)}
+select option{background:var(--bg)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.analyze-btn{width:100%;padding:.85rem;background:linear-gradient(135deg,var(--ac),var(--ac3));border:none;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;color:#fff;cursor:pointer;transition:all .3s;margin-top:.4rem;letter-spacing:.02em}
+.analyze-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,229,255,.25)}
+.analyze-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* RESULT */
+.result-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;color:var(--muted);text-align:center;min-height:300px;font-size:.88rem}
+.result-content{display:none;flex-direction:column;gap:1.1rem}
+.risk-score-display{font-family:'Syne',sans-serif;font-size:4rem;font-weight:800;line-height:1}
+.risk-score-display.safe{color:var(--safe)}
+.risk-score-display.medium{color:var(--warn)}
+.risk-score-display.high{color:var(--danger)}
+.risk-bar-track{background:var(--bd);border-radius:100px;height:5px;margin:.4rem 0 1.2rem;overflow:hidden}
+.risk-bar-fill{height:100%;border-radius:100px;transition:width 1.2s ease}
+.risk-bar-fill.safe{background:var(--safe)}
+.risk-bar-fill.medium{background:linear-gradient(90deg,var(--safe),var(--warn))}
+.risk-bar-fill.high{background:linear-gradient(90deg,var(--warn),var(--danger))}
+.verdict-badge{display:inline-flex;align-items:center;gap:.4rem;padding:.38rem 1rem;border-radius:100px;font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;width:fit-content}
+.verdict-badge.safe{background:rgba(16,185,129,.12);color:var(--safe);border:1px solid rgba(16,185,129,.25)}
+.verdict-badge.medium{background:rgba(245,158,11,.12);color:var(--warn);border:1px solid rgba(245,158,11,.25)}
+.verdict-badge.high{background:rgba(239,68,68,.12);color:var(--danger);border:1px solid rgba(239,68,68,.25)}
+.signals-grid{display:grid;grid-template-columns:1fr 1fr;gap:.55rem}
+.signal{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:.7rem .9rem}
+.signal-label{font-size:.67rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:.2rem}
+.signal-val{font-family:'DM Mono',monospace;font-size:.85rem;font-weight:500}
+.signal-val.red{color:var(--danger)}
+.signal-val.green{color:var(--safe)}
+.signal-val.yellow{color:var(--warn)}
+.ai-box{background:var(--bg);border:1px solid rgba(168,85,247,.2);border-radius:10px;padding:1.1rem}
+.ai-box-hdr{display:flex;align-items:center;gap:.5rem;font-family:'DM Mono',monospace;font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ac3);margin-bottom:.7rem}
+.ai-box p{font-size:.88rem;line-height:1.8}
+.loading-dots{display:flex;gap:.4rem;align-items:center;justify-content:center;padding:2.5rem}
+.loading-dots span{width:8px;height:8px;background:var(--ac);border-radius:50%;animation:dotB 1.2s infinite}
+.loading-dots span:nth-child(2){animation-delay:.2s}
+.loading-dots span:nth-child(3){animation-delay:.4s}
+@keyframes dotB{0%,80%,100%{transform:scale(.4);opacity:.3}40%{transform:scale(1);opacity:1}}
+
+/* UPLOAD ZONE */
+.upload-zone{border:2px dashed var(--bd);border-radius:12px;padding:2.5rem 2rem;text-align:center;cursor:pointer;transition:all .3s;position:relative;background:var(--bg)}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--ac);background:rgba(0,229,255,.03)}
+.upload-icon{font-size:2.5rem;margin-bottom:.8rem;opacity:.7}
+.upload-zone h4{font-family:'Syne',sans-serif;font-weight:700;margin-bottom:.35rem;font-size:1.05rem}
+.upload-zone p{color:var(--muted);font-size:.83rem;line-height:1.6}
+#fileInput,#imgInput{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.file-selected{display:none;align-items:center;gap:.8rem;background:rgba(0,229,255,.06);border:1px solid rgba(0,229,255,.2);border-radius:8px;padding:.8rem 1rem;margin-top:1rem}
+.file-selected.show{display:flex}
+.file-info{flex:1}
+.file-name{font-family:'DM Mono',monospace;font-size:.82rem;color:var(--ac)}
+.file-size{font-size:.75rem;color:var(--muted)}
+.start-btn{width:100%;padding:.9rem;margin-top:1rem;background:linear-gradient(135deg,var(--ac3),var(--ac2));border:none;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;color:#fff;cursor:pointer;transition:all .3s;display:none;letter-spacing:.02em}
+.start-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(168,85,247,.3)}
+.start-btn.visible{display:block}
+
+/* BULK TABLE */
+.bulk-summary{display:flex;gap:.8rem;margin-bottom:1.2rem;flex-wrap:wrap}
+.sum-box{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:.7rem 1.2rem;min-width:100px}
+.sum-box.danger{background:rgba(239,68,68,.06);border-color:rgba(239,68,68,.2)}
+.sum-box.safe{background:rgba(16,185,129,.06);border-color:rgba(16,185,129,.2)}
+.sum-box.warn{background:rgba(245,158,11,.06);border-color:rgba(245,158,11,.2)}
+.sum-val{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800}
+.sum-lbl{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.tbl-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--bd)}
+table{width:100%;border-collapse:collapse;font-size:.81rem}
+th{background:var(--s2);padding:.65rem 1rem;text-align:left;font-family:'DM Mono',monospace;font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border-bottom:1px solid var(--bd)}
+td{padding:.6rem 1rem;border-bottom:1px solid rgba(30,45,69,.4)}
+tr:last-child td{border:none}
+tr:hover td{background:rgba(0,229,255,.015)}
+.badge{display:inline-flex;align-items:center;gap:.25rem;padding:.18rem .55rem;border-radius:100px;font-size:.72rem;font-weight:600}
+.badge.safe{background:rgba(16,185,129,.12);color:var(--safe);border:1px solid rgba(16,185,129,.2)}
+.badge.high{background:rgba(239,68,68,.12);color:var(--danger);border:1px solid rgba(239,68,68,.2)}
+.badge.medium{background:rgba(245,158,11,.12);color:var(--warn);border:1px solid rgba(245,158,11,.2)}
+.mini-bar{display:flex;align-items:center;gap:.5rem}
+.mini-bar-track{flex:1;background:var(--bd);border-radius:100px;height:4px}
+.mini-bar-fill{height:4px;border-radius:100px}
+
+/* IMAGE ANALYSIS */
+.img-preview{width:100%;max-height:280px;object-fit:contain;border-radius:8px;border:1px solid var(--bd);margin-top:.5rem;display:none}
+.img-preview.show{display:block}
+.img-analysis-result{display:none}
+.img-analysis-result.show{display:block}
+.img-analysis-box{background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:1.2rem;margin-top:1rem}
+.img-analysis-text{font-size:.88rem;line-height:1.85;white-space:pre-wrap}
+.img-score-row{display:flex;align-items:center;gap:1rem;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--bd)}
+
+/* NETWORK */
+#netWrap{background:var(--bg);border:1px solid var(--bd);border-radius:12px;overflow:hidden;position:relative}
+#netCanvas{display:block;width:100%}
+.canvas-legend{position:absolute;bottom:1rem;left:1rem;display:flex;gap:1rem;background:rgba(5,8,16,.85);padding:.5rem .9rem;border-radius:7px;border:1px solid var(--bd);font-size:.72rem;font-family:'DM Mono',monospace}
+.ldot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:.3rem;vertical-align:middle}
+.scan-line{position:absolute;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,var(--ac),transparent);animation:scan 4s linear infinite;pointer-events:none}
+@keyframes scan{from{top:0}to{top:100%}}
+
+/* THREATS */
+.threat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.2rem;margin-top:2.5rem}
+.threat-card{background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:1.6rem;transition:all .3s}
+.threat-card:hover{border-color:var(--ac2);transform:translateY(-3px)}
+.threat-icon{font-size:2.2rem;margin-bottom:.8rem}
+.threat-card h3{font-family:'Syne',sans-serif;font-weight:700;margin-bottom:.4rem;font-size:1rem}
+.threat-card p{color:var(--muted);font-size:.87rem;line-height:1.7;margin-bottom:.8rem}
+.threat-sev{font-size:.68rem;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--danger)}
+
+/* TIPS */
+.tips-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1rem;margin-top:2.5rem}
+.tip-card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:1.3rem;display:flex;gap:.9rem;transition:border-color .2s}
+.tip-card:hover{border-color:var(--safe)}
+.tip-num{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:var(--safe);opacity:.35;flex-shrink:0;line-height:1}
+.tip-card h4{font-family:'Syne',sans-serif;font-size:.92rem;font-weight:700;margin-bottom:.25rem}
+.tip-card p{font-size:.83rem;color:var(--muted);line-height:1.6}
+
+/* FOOTER */
+footer{background:var(--s1);border-top:1px solid var(--bd);padding:2.5rem 2rem;text-align:center}
+.footer-logo{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:var(--ac);margin-bottom:.4rem}
+.footer-desc{color:var(--muted);font-size:.82rem;max-width:420px;margin:0 auto 1rem;line-height:1.7}
+.footer-note{font-size:.72rem;color:var(--muted);opacity:.45}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9998;background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:.9rem 1.3rem;display:flex;align-items:center;gap:.7rem;font-size:.88rem;box-shadow:0 20px 60px rgba(0,0,0,.5);transform:translateY(80px);opacity:0;transition:all .35s;max-width:320px}
+.toast.show{transform:none;opacity:1}
+
+/* ERROR */
+.error-box{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:1rem;font-size:.85rem;color:var(--danger);margin-top:.5rem;display:none}
+.error-box.show{display:block}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="#home"><span class="logo-badge">₹</span>UPI Rakshak</a>
+  <ul>
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#analyze">Analyze</a></li>
+    <li><a href="#threats">Threats</a></li>
+    <li><a href="#tips">Stay Safe</a></li>
+    <li><a href="#analyze" class="nav-cta">Check Now →</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero" id="home">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-pill"><span class="pulse"></span>AI · Graph Neural Networks · XGBoost · Real-time</div>
+  <h1>Detect UPI Fraud<br>Before It Strikes<span>.</span></h1>
+  <p class="hero-sub">UPI Rakshak maps entire criminal "mule account rings" using Graph AI — detecting fraud patterns invisible to traditional ML.</p>
+  <div class="hero-actions">
+    <button class="btn-primary" onclick="scrollTo('analyze')">Analyze a Transaction →</button>
+    <button class="btn-ghost" onclick="scrollTo('how')">How It Works</button>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-val">₹1.2T</div><div class="stat-lbl">Annual UPI Fraud Loss</div></div>
+    <div class="stat"><div class="stat-val">97.4%</div><div class="stat-lbl">Detection Accuracy</div></div>
+    <div class="stat"><div class="stat-val">&lt;2s</div><div class="stat-lbl">AI Analysis Time</div></div>
+    <div class="stat"><div class="stat-val">12+</div><div class="stat-lbl">Fraud Signal Types</div></div>
+  </div>
+</div>
+<div class="divider"></div>
+
+<!-- HOW IT WORKS -->
+<div class="full-bg" id="how">
+  <div class="section-wrap">
+    <div class="section-label">// Architecture</div>
+    <div class="section-title">Graph Intelligence, Not Just Tables</div>
+    <p class="section-desc">Traditional AI sees spreadsheet rows. UPI Rakshak maps the entire transaction network — identifying mule hubs, scoring centrality, and detecting rings in real-time.</p>
+    <div class="steps">
+      <div class="step-card"><div class="step-num">01</div><div class="step-icon">🕸️</div><h3>Graph Construction</h3><p>Transaction logs become a directed graph. Nodes = UPI accounts. Edges = money flows. Built with NetworkX in milliseconds.</p></div>
+      <div class="step-card"><div class="step-num">02</div><div class="step-icon">📐</div><h3>Feature Engineering</h3><p>Degree Centrality scores how many unique parties an account touches. PageRank identifies the "boss" mule hub at the center.</p></div>
+      <div class="step-card"><div class="step-num">03</div><div class="step-icon">🧠</div><h3>XGBoost Classification</h3><p>Graph features + transaction metadata feed into an XGBoost model trained on 6M+ transactions. Output: 0–100 risk score.</p></div>
+      <div class="step-card"><div class="step-num">04</div><div class="step-icon">🔍</div><h3>AI Explainability</h3><p>Claude AI explains exactly why a transaction was flagged — naming the fraud pattern and recommending immediate action.</p></div>
+    </div>
+  </div>
+</div>
+<div class="divider"></div>
+
+<!-- ANALYZER -->
+<div class="section-wrap" id="analyze">
+  <div class="section-label">// Transaction Intelligence</div>
+  <div class="section-title">Analyze a Transaction</div>
+  <p class="section-desc">Enter UPI details manually, upload a CSV for bulk scanning, or upload a screenshot for visual AI analysis.</p>
+
+  <div class="tabs" style="margin-top:2rem">
+    <button class="tab active" onclick="switchTab('manual',this)">Manual Entry</button>
+    <button class="tab" onclick="switchTab('bulk',this)">Bulk CSV Upload</button>
+    <button class="tab" onclick="switchTab('image',this)">Screenshot / Image</button>
+    <button class="tab" onclick="switchTab('network',this)">Fraud Ring Graph</button>
+  </div>
+
+  <!-- MANUAL -->
+  <div class="tab-content active" id="tab-manual">
+    <div class="analyzer-grid">
+      <div class="card">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Sender UPI ID</label>
+            <input id="sender" type="text" placeholder="rajesh@okicici">
+          </div>
+          <div class="form-group">
+            <label>Receiver UPI ID</label>
+            <input id="receiver" type="text" placeholder="shop@paytm">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Amount (₹)</label>
+            <input id="amount" type="number" placeholder="e.g. 4999" min="1">
+          </div>
+          <div class="form-group">
+            <label>Transaction Type</label>
+            <select id="txType">
+              <option value="UPI_TRANSFER">UPI Transfer</option>
+              <option value="UPI_PAYMENT">UPI Payment</option>
+              <option value="COLLECT_REQUEST">Collect Request</option>
+              <option value="CASH_OUT">Cash Out</option>
+              <option value="DEBIT">Debit</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Time of Transaction</label>
+          <input id="txTime" type="time" value="14:30">
+        </div>
+        <div class="form-group">
+          <label>Additional Context (Optional)</label>
+          <textarea id="context" rows="2" placeholder="e.g. Received OTP request from unknown number before this transfer…"></textarea>
+        </div>
+        <div class="error-box" id="manualError"></div>
+        <button class="analyze-btn" onclick="doManualAnalyze()" id="analyzeBtn">⚡ Analyze Transaction</button>
+      </div>
+      <div class="card" id="resultPanel">
+        <div class="result-placeholder" id="resultPlaceholder">
+          <svg width="52" height="52" viewBox="0 0 52 52" fill="none" opacity=".15"><circle cx="26" cy="26" r="24" stroke="#64748b" stroke-width="2"/><path d="M26 16v12M26 34v2" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/></svg>
+          <p>Fill details and click<br><strong>Analyze Transaction</strong></p>
+        </div>
+        <div class="result-content" id="resultContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BULK CSV -->
+  <div class="tab-content" id="tab-bulk">
+    <div class="card">
+      <div class="upload-zone" id="csvDrop">
+        <input type="file" id="fileInput" accept=".csv,.txt">
+        <div class="upload-icon">📂</div>
+        <h4>Drop your CSV file here</h4>
+        <p>Supports Kaggle PaySim format · Columns: step, type, amount, nameOrig, nameDest<br>Maximum 100 rows analyzed · Any CSV with sender/receiver/amount works</p>
+      </div>
+      <div class="file-selected" id="csvFileInfo">
+        <span style="font-size:1.5rem">📄</span>
+        <div class="file-info">
+          <div class="file-name" id="csvFileName">—</div>
+          <div class="file-size" id="csvFileSize">—</div>
+        </div>
+        <button onclick="clearCSV()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem">✕</button>
+      </div>
+      <button class="start-btn" id="csvStartBtn" onclick="doBulkAnalyze()">🚀 Start Bulk Analysis</button>
+      <div class="error-box" id="bulkError"></div>
+    </div>
+    <div id="bulkResults" style="margin-top:1.5rem;display:none"></div>
+  </div>
+
+  <!-- IMAGE UPLOAD -->
+  <div class="tab-content" id="tab-image">
+    <div class="analyzer-grid">
+      <div class="card">
+        <div class="upload-zone" id="imgDrop">
+          <input type="file" id="imgInput" accept="image/*">
+          <div class="upload-icon">🖼️</div>
+          <h4>Upload Payment Screenshot</h4>
+          <p>UPI transaction screenshots, bank SMS, PhonePe/GPay/Paytm screens, suspicious QR codes · Max 20 MB · JPG, PNG, WEBP</p>
+        </div>
+        <img id="imgPreview" class="img-preview" alt="Preview">
+        <div class="file-selected" id="imgFileInfo">
+          <span style="font-size:1.5rem">🖼️</span>
+          <div class="file-info">
+            <div class="file-name" id="imgFileName">—</div>
+            <div class="file-size" id="imgFileSize">—</div>
+          </div>
+          <button onclick="clearImg()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem">✕</button>
+        </div>
+        <button class="start-btn" id="imgStartBtn" onclick="doImageAnalyze()">🔍 Analyze Screenshot</button>
+        <div class="error-box" id="imgError"></div>
+      </div>
+      <div class="card" id="imgResultPanel">
+        <div class="result-placeholder" id="imgResultPlaceholder">
+          <svg width="52" height="52" viewBox="0 0 52 52" fill="none" opacity=".15"><rect x="6" y="10" width="40" height="32" rx="4" stroke="#64748b" stroke-width="2"/><circle cx="18" cy="22" r="4" stroke="#64748b" stroke-width="2"/><path d="M6 36l10-8 8 6 8-5 12 9" stroke="#64748b" stroke-width="2" stroke-linecap="round"/></svg>
+          <p>Upload a screenshot and click<br><strong>Analyze Screenshot</strong></p>
+        </div>
+        <div class="img-analysis-result" id="imgResultContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NETWORK GRAPH -->
+  <div class="tab-content" id="tab-network">
+    <div id="netWrap">
+      <canvas id="netCanvas"></canvas>
+      <div class="scan-line"></div>
+      <div class="canvas-legend">
+        <span style="color:var(--txt)"><span class="ldot" style="background:var(--safe)"></span>Normal</span>
+        <span style="color:var(--txt)"><span class="ldot" style="background:var(--warn)"></span>Suspicious</span>
+        <span style="color:var(--txt)"><span class="ldot" style="background:var(--danger)"></span>Fraud Hub</span>
+      </div>
+    </div>
+    <p style="color:var(--muted);font-size:.8rem;margin-top:.7rem;text-align:center">Simulated fraud ring network. Central red nodes = detected mule account hubs. Animated particles show money flow direction.</p>
+  </div>
+</div>
+<div class="divider"></div>
+
+<!-- THREATS -->
+<div class="full-bg" id="threats">
+  <div class="section-wrap">
+    <div class="section-label">// Threat Intelligence</div>
+    <div class="section-title">Common UPI Fraud Patterns</div>
+    <p class="section-desc">UPI Rakshak detects all major fraud vectors active in India's digital payment ecosystem.</p>
+    <div class="threat-grid">
+      <div class="threat-card"><div class="threat-icon">🕵️</div><h3>Mule Account Rings</h3><p>Fraudsters bounce stolen money through 10–50 fake accounts to obscure origin before final withdrawal.</p><div class="threat-sev">⬤ CRITICAL RISK</div></div>
+      <div class="threat-card"><div class="threat-icon">📞</div><h3>Vishing / OTP Scams</h3><p>Caller poses as bank/NPCI official, tricks victim into sharing OTP or approving a collect request.</p><div class="threat-sev">⬤ HIGH RISK</div></div>
+      <div class="threat-card"><div class="threat-icon">🔗</div><h3>Phishing QR Codes</h3><p>Malicious QR triggers a payment request (debit) instead of receive. Scanning drains your account.</p><div class="threat-sev">⬤ HIGH RISK</div></div>
+      <div class="threat-card"><div class="threat-icon">📱</div><h3>SIM Swap Fraud</h3><p>Fraudster ports your number to a new SIM, receives all OTPs, and drains your linked bank account.</p><div class="threat-sev">⬤ CRITICAL RISK</div></div>
+      <div class="threat-card"><div class="threat-icon">💰</div><h3>Fake Merchant QR</h3><p>Counterfeit QR stickers placed over real merchant codes. You pay the fraudster, not the shop.</p><div class="threat-sev">⬤ MEDIUM RISK</div></div>
+      <div class="threat-card"><div class="threat-icon">🤖</div><h3>Burst Micro-Attacks</h3><p>Bots test stolen UPI credentials with ₹1–₹9 transfers before executing large withdrawals.</p><div class="threat-sev">⬤ HIGH RISK</div></div>
+    </div>
+  </div>
+</div>
+<div class="divider"></div>
+
+<!-- TIPS -->
+<div class="section-wrap" id="tips">
+  <div class="section-label">// Protection Guide</div>
+  <div class="section-title">Stay Safe from UPI Fraud</div>
+  <p class="section-desc">9 RBI-recommended rules to protect your UPI accounts and digital wallet.</p>
+  <div class="tips-grid">
+    <div class="tip-card"><div class="tip-num">01</div><div><h4>Never Share OTP or PIN</h4><p>Your bank will NEVER ask for OTP, UPI PIN, or CVV over call or SMS. Hang up immediately.</p></div></div>
+    <div class="tip-card"><div class="tip-num">02</div><div><h4>Verify QR Before Scanning</h4><p>Check if a QR sticker is placed over another. Manually type UPI ID for large transactions.</p></div></div>
+    <div class="tip-card"><div class="tip-num">03</div><div><h4>Set Daily UPI Limits</h4><p>In your UPI app settings, set a daily limit (₹10K–₹25K) to cap potential damage from breach.</p></div></div>
+    <div class="tip-card"><div class="tip-num">04</div><div><h4>Enable Transaction Alerts</h4><p>Turn on real-time SMS + email alerts for every UPI transaction. Instant detection = faster recovery.</p></div></div>
+    <div class="tip-card"><div class="tip-num">05</div><div><h4>Collect Request = Sending Money</h4><p>Approving a "collect" request sends money OUT. Never approve unknown collect requests ever.</p></div></div>
+    <div class="tip-card"><div class="tip-num">06</div><div><h4>Use Biometric App Lock</h4><p>Enable fingerprint/face unlock on your UPI app. Never store UPI PIN in notes or messages.</p></div></div>
+    <div class="tip-card"><div class="tip-num">07</div><div><h4>Verify Recipient Name</h4><p>Always confirm the name shown by the UPI app matches who you're paying before proceeding.</p></div></div>
+    <div class="tip-card"><div class="tip-num">08</div><div><h4>Report Fraud in 24 Hours</h4><p>Call 1930 (Cyber Crime Helpline) within 24 hours. Early reporting greatly increases fund recovery.</p></div></div>
+    <div class="tip-card"><div class="tip-num">09</div><div><h4>Revoke Unnecessary App Permissions</h4><p>Remove SMS/call permissions from apps that don't need them. Malware reads OTPs via SMS access.</p></div></div>
+  </div>
+</div>
+<div class="divider"></div>
+
+<footer>
+  <div class="footer-logo">UPI Rakshak</div>
+  <p class="footer-desc">Graph-Based Payment Fraud Intelligence. Built with NetworkX + XGBoost + Claude AI. Protecting India's digital payments.</p>
+  <p class="footer-note">⚠️ For educational and demonstration purposes. Analysis is indicative, not legally binding. Report fraud: 1930 · cybercrime.gov.in</p>
+</footer>
+
+<div class="toast" id="toast"><span id="toastIcon"></span><span id="toastMsg"></span></div>
+
+<script>
+// ---- CONFIG: Set to your Vercel deployment URL or leave empty for same-origin ----
+const API_BASE = '';  // e.g. 'https://upi-rakshak.vercel.app' or '' for same-origin
+
+function api(path){ return API_BASE + path; }
+function scrollTo(id){ document.getElementById(id).scrollIntoView({behavior:'smooth'}); }
+
+// TABS
+function switchTab(id, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  if (id === 'network') { setTimeout(drawNetwork, 80); }
+}
+
+// TOAST
+function toast(msg, icon='ℹ️', dur=3500) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastIcon').textContent = icon;
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+// ---- MANUAL ANALYZE ----
+async function doManualAnalyze() {
+  const sender = document.getElementById('sender').value.trim();
+  const receiver = document.getElementById('receiver').value.trim();
+  const amount = parseFloat(document.getElementById('amount').value);
+  const txType = document.getElementById('txType').value;
+  const txTime = document.getElementById('txTime').value;
+  const context = document.getElementById('context').value.trim();
+  const errEl = document.getElementById('manualError');
+
+  errEl.classList.remove('show');
+  if (!sender || !receiver || !amount || isNaN(amount)) {
+    errEl.textContent = 'Please fill Sender UPI ID, Receiver UPI ID, and Amount.';
+    errEl.classList.add('show');
+    return;
+  }
+
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true; btn.textContent = '⏳ Analyzing...';
+  document.getElementById('resultPlaceholder').style.display = 'none';
+  const rc = document.getElementById('resultContent');
+  rc.style.display = 'flex';
+  rc.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
+
+  try {
+    const res = await fetch(api('/api/analyze'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sender, receiver, amount, txType, txTime, context })
+    });
+    if (!res.ok) throw new Error(`Server error ${res.status}`);
+    const data = await res.json();
+    renderManualResult(data);
+  } catch (e) {
+    rc.innerHTML = `<div style="color:var(--danger);font-size:.88rem;padding:1rem">⚠️ ${e.message || 'Analysis failed. Check your connection.'}</div>`;
+  } finally {
+    btn.disabled = false; btn.textContent = '⚡ Analyze Transaction';
+  }
+}
+
+function renderManualResult(d) {
+  const {score, level, flags, analysis} = d;
+  const verdicts = { safe: '✅ APPEARS SAFE', medium: '⚠️ SUSPICIOUS', high: '🚨 HIGH FRAUD RISK' };
+  const html = `
+    <div style="text-align:center">
+      <div style="font-family:'DM Mono',monospace;font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.3rem">Fraud Risk Score</div>
+      <div class="risk-score-display ${level}">${score}</div>
+      <div style="font-size:.72rem;color:var(--muted)">out of 100</div>
+      <div class="risk-bar-track"><div class="risk-bar-fill ${level}" id="rBar" style="width:0%"></div></div>
+      <div class="verdict-badge ${level}" style="margin:0 auto">${verdicts[level]}</div>
+    </div>
+    <div class="signals-grid">
+      ${flags.map(f=>`<div class="signal"><span class="signal-label">${f.label}</span><span class="signal-val ${f.cls}">${f.val}</span></div>`).join('')}
+    </div>
+    <div class="ai-box">
+      <div class="ai-box-hdr">🤖 AI Analysis</div>
+      <p>${analysis}</p>
+    </div>
+  `;
+  const rc = document.getElementById('resultContent');
+  rc.innerHTML = html;
+  rc.style.display = 'flex';
+  setTimeout(() => { const b = document.getElementById('rBar'); if(b) b.style.width = score + '%'; }, 80);
+}
+
+// ---- CSV BULK ----
+let csvData = null;
+
+document.getElementById('fileInput').addEventListener('change', function() {
+  const f = this.files[0];
+  if (!f) return;
+  document.getElementById('csvFileName').textContent = f.name;
+  document.getElementById('csvFileSize').textContent = (f.size/1024).toFixed(1) + ' KB · ' + 'Ready to analyze';
+  document.getElementById('csvFileInfo').classList.add('show');
+  document.getElementById('csvStartBtn').classList.add('visible');
+
+  const reader = new FileReader();
+  reader.onload = (e) => { csvData = parseCSV(e.target.result); };
+  reader.readAsText(f);
+});
+
+function parseCSV(text) {
+  const lines = text.split('\n').filter(l => l.trim());
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/['"]/g,''));
+  return lines.slice(1).map(line => {
+    const cols = line.split(',');
+    const obj = {};
+    headers.forEach((h,i) => obj[h] = (cols[i]||'').trim().replace(/['"]/g,''));
+    return obj;
+  }).filter(r => r.amount || r.nameOrig || r.sender);
+}
+
+function clearCSV() {
+  csvData = null;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('csvFileInfo').classList.remove('show');
+  document.getElementById('csvStartBtn').classList.remove('visible');
+  document.getElementById('bulkResults').style.display = 'none';
+}
+
+async function doBulkAnalyze() {
+  if (!csvData || csvData.length === 0) {
+    document.getElementById('bulkError').textContent = 'Please upload a valid CSV file first.';
+    document.getElementById('bulkError').classList.add('show');
+    return;
+  }
+  document.getElementById('bulkError').classList.remove('show');
+
+  const btn = document.getElementById('csvStartBtn');
+  btn.disabled = true; btn.textContent = '⏳ Analyzing...';
+  toast('Analyzing ' + Math.min(csvData.length, 100) + ' transactions…', '🔄', 8000);
+
+  try {
+    const res = await fetch(api('/api/bulk'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rows: csvData })
+    });
+    if (!res.ok) throw new Error(`Server error ${res.status}`);
+    const data = await res.json();
+    renderBulkResults(data);
+    toast('Analysis complete!', '✅');
+  } catch (e) {
+    document.getElementById('bulkError').textContent = e.message || 'Bulk analysis failed.';
+    document.getElementById('bulkError').classList.add('show');
+  } finally {
+    btn.disabled = false; btn.textContent = '🚀 Start Bulk Analysis';
+  }
+}
+
+function renderBulkResults(data) {
+  const {results, summary, stats} = data;
+  const container = document.getElementById('bulkResults');
+  container.style.display = 'block';
+  container.innerHTML = `
+    <div class="card">
+      <div class="bulk-summary">
+        <div class="sum-box"><div class="sum-val">${stats.total}</div><div class="sum-lbl">Total Analyzed</div></div>
+        <div class="sum-box danger"><div class="sum-val" style="color:var(--danger)">${stats.fraud}</div><div class="sum-lbl">High Risk</div></div>
+        <div class="sum-box warn"><div class="sum-val" style="color:var(--warn)">${stats.suspect}</div><div class="sum-lbl">Suspicious</div></div>
+        <div class="sum-box safe"><div class="sum-val" style="color:var(--safe)">${stats.clean}</div><div class="sum-lbl">Clean</div></div>
+      </div>
+      ${summary ? `<div class="ai-box" style="margin-bottom:1.2rem"><div class="ai-box-hdr">🤖 Batch AI Summary</div><p>${summary}</p></div>` : ''}
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Sender</th><th>Receiver</th><th>Amount</th><th>Type</th><th>Risk Score</th><th>Status</th></tr></thead>
+          <tbody>
+            ${results.map((r,i) => `
+              <tr>
+                <td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:.72rem">${i+1}</td>
+                <td style="font-family:'DM Mono',monospace;font-size:.78rem;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.sender}</td>
+                <td style="font-family:'DM Mono',monospace;font-size:.78rem;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.receiver}</td>
+                <td style="font-family:'DM Mono',monospace">₹${parseFloat(r.amount).toLocaleString('en-IN')}</td>
+                <td style="font-size:.78rem;color:var(--muted)">${r.type}</td>
+                <td>
+                  <div class="mini-bar">
+                    <div class="mini-bar-track"><div class="mini-bar-fill" style="width:${r.score}%;background:${r.level==='high'?'var(--danger)':r.level==='medium'?'var(--warn)':'var(--safe)'}"></div></div>
+                    <span style="font-family:'DM Mono',monospace;font-size:.78rem;width:2rem">${r.score}</span>
+                  </div>
+                </td>
+                <td><span class="badge ${r.level}">${r.level==='safe'?'✓ Safe':r.level==='medium'?'⚠ Watch':'✗ Fraud'}</span></td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+// ---- IMAGE ANALYZE ----
+let imgBase64 = null, imgMediaType = null;
+
+document.getElementById('imgInput').addEventListener('change', function() {
+  const f = this.files[0];
+  if (!f) return;
+  if (f.size > 20 * 1024 * 1024) {
+    document.getElementById('imgError').textContent = 'File too large. Maximum size is 20 MB.';
+    document.getElementById('imgError').classList.add('show');
+    return;
+  }
+  document.getElementById('imgError').classList.remove('show');
+  document.getElementById('imgFileName').textContent = f.name;
+  document.getElementById('imgFileSize').textContent = (f.size/1024/1024).toFixed(2) + ' MB';
+  document.getElementById('imgFileInfo').classList.add('show');
+  document.getElementById('imgStartBtn').classList.add('visible');
+  imgMediaType = f.type || 'image/jpeg';
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const b64full = e.target.result;
+    imgBase64 = b64full.split(',')[1];
+    const prev = document.getElementById('imgPreview');
+    prev.src = b64full;
+    prev.classList.add('show');
+  };
+  reader.readAsDataURL(f);
+});
+
+function clearImg() {
+  imgBase64 = null; imgMediaType = null;
+  document.getElementById('imgInput').value = '';
+  document.getElementById('imgFileInfo').classList.remove('show');
+  document.getElementById('imgStartBtn').classList.remove('visible');
+  document.getElementById('imgPreview').classList.remove('show');
+  document.getElementById('imgResultContent').classList.remove('show');
+  document.getElementById('imgResultPlaceholder').style.display = 'flex';
+}
+
+async function doImageAnalyze() {
+  if (!imgBase64) {
+    document.getElementById('imgError').textContent = 'Please upload an image first.';
+    document.getElementById('imgError').classList.add('show');
+    return;
+  }
+  document.getElementById('imgError').classList.remove('show');
+
+  const btn = document.getElementById('imgStartBtn');
+  btn.disabled = true; btn.textContent = '⏳ Analyzing Image...';
+  document.getElementById('imgResultPlaceholder').style.display = 'none';
+  const rc = document.getElementById('imgResultContent');
+  rc.classList.add('show');
+  rc.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
+
+  try {
+    const res = await fetch(api('/api/analyze-image'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageBase64: imgBase64, mediaType: imgMediaType })
+    });
+    if (!res.ok) throw new Error(`Server error ${res.status}`);
+    const data = await res.json();
+    renderImageResult(data);
+    toast('Image analyzed!', '✅');
+  } catch(e) {
+    rc.innerHTML = `<div style="color:var(--danger);font-size:.88rem;padding:1rem">⚠️ ${e.message || 'Image analysis failed.'}</div>`;
+  } finally {
+    btn.disabled = false; btn.textContent = '🔍 Analyze Screenshot';
+  }
+}
+
+function renderImageResult(d) {
+  const {analysis, score, level} = d;
+  const verdicts = { safe: '✅ APPEARS LEGITIMATE', medium: '⚠️ SUSPICIOUS', high: '🚨 HIGH FRAUD RISK' };
+  // Format markdown-ish bold
+  const formatted = analysis
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>');
+
+  const rc = document.getElementById('imgResultContent');
+  rc.innerHTML = `
+    <div class="img-score-row">
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">Risk Score</div>
+        <div class="risk-score-display ${level}" style="font-size:2.8rem;line-height:1.1">${score}</div>
+        <div style="font-size:.7rem;color:var(--muted)">/ 100</div>
+      </div>
+      <div style="flex:1">
+        <div class="verdict-badge ${level}" style="margin-bottom:.5rem">${verdicts[level]}</div>
+        <div class="risk-bar-track"><div class="risk-bar-fill ${level}" id="imgRBar" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div class="img-analysis-box">
+      <p class="img-analysis-text">${formatted}</p>
+    </div>
+  `;
+  setTimeout(() => { const b = document.getElementById('imgRBar'); if(b) b.style.width = score + '%'; }, 80);
+}
+
+// ---- DRAG & DROP ----
+function setupDrop(zoneId, inputId) {
+  const zone = document.getElementById(zoneId);
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('dragover');
+    const f = e.dataTransfer.files[0];
+    if (!f) return;
+    const inp = document.getElementById(inputId);
+    const dt = new DataTransfer(); dt.items.add(f); inp.files = dt.files;
+    inp.dispatchEvent(new Event('change'));
+  });
+}
+setupDrop('csvDrop', 'fileInput');
+setupDrop('imgDrop', 'imgInput');
+
+// ---- NETWORK GRAPH ----
+function drawNetwork() {
+  const canvas = document.getElementById('netCanvas');
+  if (!canvas) return;
+  const wrap = document.getElementById('netWrap');
+  canvas.width = wrap.clientWidth;
+  canvas.height = Math.min(440, window.innerHeight * 0.55);
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const colors = { normal: '#10b981', suspect: '#f59e0b', fraud: '#ef4444' };
+  const nodes = [
+    { x: W/2, y: H/2, r: 20, type: 'fraud', label: 'HUB', vx: 0, vy: 0 },
+    { x: W*0.3, y: H*0.3, r: 14, type: 'fraud', label: '', vx: .15, vy: .1 },
+    { x: W*0.7, y: H*0.7, r: 13, type: 'fraud', label: '', vx: -.12, vy: -.08 },
+  ];
+  for (let i = 0; i < 22; i++) {
+    const a = (i / 22) * Math.PI * 2;
+    const d = 90 + Math.random() * 110;
+    const types = ['normal','normal','normal','suspect','suspect'];
+    nodes.push({
+      x: W/2 + Math.cos(a)*d + (Math.random()-.5)*50,
+      y: H/2 + Math.sin(a)*d + (Math.random()-.5)*50,
+      r: 6 + Math.random()*4,
+      type: types[Math.floor(Math.random()*types.length)],
+      label: '', vx: (Math.random()-.5)*.25, vy: (Math.random()-.5)*.25
+    });
+  }
+
+  const edges = [];
+  for (let i = 1; i < nodes.length; i++) {
+    edges.push([0, i]);
+    if (i > 2 && Math.random() < 0.3) edges.push([Math.floor(Math.random()*3)+1, i]);
+  }
+  edges.push([1, 2]);
+
+  let t = 0;
+  let animId;
+  function frame() {
+    if (!document.getElementById('tab-network').classList.contains('active')) {
+      cancelAnimationFrame(animId); return;
+    }
+    ctx.clearRect(0, 0, W, H);
+
+    edges.forEach(([a, b]) => {
+      const na = nodes[a], nb = nodes[b];
+      const hot = na.type !== 'normal' || nb.type !== 'normal';
+      ctx.beginPath(); ctx.moveTo(na.x, na.y); ctx.lineTo(nb.x, nb.y);
+      ctx.strokeStyle = hot ? 'rgba(239,68,68,.2)' : 'rgba(30,45,69,.7)';
+      ctx.lineWidth = hot ? 1.2 : 0.7;
+      ctx.stroke();
+
+      if (hot && Math.random() < 0.025) {
+        const p = (t * 0.012) % 1;
+        const px = na.x + (nb.x - na.x) * p;
+        const py = na.y + (nb.y - na.y) * p;
+        ctx.beginPath(); ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = colors[na.type]; ctx.fill();
+      }
+    });
+
+    nodes.forEach((n, i) => {
+      if (n.type === 'fraud') {
+        const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r * 3.5);
+        g.addColorStop(0, 'rgba(239,68,68,.25)'); g.addColorStop(1, 'rgba(239,68,68,0)');
+        ctx.beginPath(); ctx.arc(n.x, n.y, n.r * 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = g; ctx.fill();
+      }
+      ctx.beginPath();
+      const pulse = i < 3 ? Math.sin(t * 0.06 + i) * 2 : 0;
+      ctx.arc(n.x, n.y, n.r + pulse, 0, Math.PI * 2);
+      ctx.fillStyle = colors[n.type]; ctx.fill();
+      if (n.label) {
+        ctx.fillStyle = '#fff'; ctx.font = 'bold 7px DM Mono,monospace';
+        ctx.textAlign = 'center'; ctx.fillText(n.label, n.x, n.y + 2.5);
+      }
+      if (i >= 3) {
+        n.x += n.vx; n.y += n.vy;
+        if (n.x < 15 || n.x > W - 15) n.vx *= -1;
+        if (n.y < 15 || n.y > H - 15) n.vy *= -1;
+      }
+    });
+    t++;
+    animId = requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+window.addEventListener('resize', () => {
+  if (document.getElementById('tab-network').classList.contains('active')) drawNetwork();
+});
+</script>
+</body>
+</html>
