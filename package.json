@@ -1,13 +1,9 @@
 {
   "name": "upi-rakshak",
   "version": "1.0.0",
-  "description": "UPI Fraud Detection Intelligence Platform",
-  "scripts": {
-    "dev": "vercel dev",
-    "build": "echo 'Static build complete'"
-  },
+  "description": "UPI Fraud Detection Platform",
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.24.0"
+    "@google/generative-ai": "^0.21.0"
   },
   "engines": {
     "node": ">=18"
